@@ -8,7 +8,7 @@ import { projects } from '@/data/projects';
 
 const Index = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedLanguage, setSelectedLanguage] = useState('');
+  const [selectedLanguage, setSelectedLanguage] = useState('all');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState('stars');
   const [showGoodFirstIssues, setShowGoodFirstIssues] = useState(false);
@@ -23,7 +23,7 @@ const Index = () => {
         }
         
         // Filter by language
-        if (selectedLanguage && project.language !== selectedLanguage) {
+        if (selectedLanguage !== 'all' && project.language !== selectedLanguage) {
           return false;
         }
         
@@ -57,7 +57,7 @@ const Index = () => {
 
   const resetFilters = () => {
     setSearchTerm('');
-    setSelectedLanguage('');
+    setSelectedLanguage('all');
     setSelectedTags([]);
     setSortBy('stars');
     setShowGoodFirstIssues(false);
