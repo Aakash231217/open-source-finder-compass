@@ -8,8 +8,8 @@ import Index from "./pages/Index";
 import ProjectDetails from "./pages/ProjectDetails";
 import NotFound from "./pages/NotFound";
 
-// Add a console log to help debug
-console.log('App rendering with @radix-ui/react-select version:', require('@radix-ui/react-select/package.json').version);
+// Remove the require statement as it's not supported in browser environments
+console.log('App rendering');
 
 const queryClient = new QueryClient();
 
