@@ -11,6 +11,10 @@ interface ProjectCardProps {
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
+  // Extract owner and repo from the repository URL for the link
+  const urlParts = project.repositoryUrl.replace('https://github.com/', '').split('/');
+  const linkPath = `/project/${urlParts[0]}/${urlParts[1]}`;
+
   return (
     <Card className="h-full overflow-hidden transition-all duration-200 hover:shadow-md animate-fade-in">
       <CardHeader className="pb-2">
@@ -22,7 +26,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
           />
           <span className="text-sm text-muted-foreground">{project.owner.name}</span>
         </div>
-        <Link to={`/project/${project.id}`} className="hover:underline">
+        <Link to={linkPath} className="hover:underline">
           <h3 className="font-bold text-xl mt-2">{project.name}</h3>
         </Link>
       </CardHeader>

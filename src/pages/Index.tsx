@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import ProjectCard from '@/components/ProjectCard';
@@ -20,6 +19,7 @@ const Index = () => {
   const [page, setPage] = useState(1);
   const [languages, setLanguages] = useState<string[]>([]);
   const [topics, setTopics] = useState<string[]>([]);
+  const [allProjects, setAllProjects] = useState<Project[]>([]); // Store all fetched projects
 
   // Fetch available languages and topics
   useEffect(() => {
@@ -48,6 +48,17 @@ const Index = () => {
       
       // Adapt GitHub repos to our Project format
       const projects: Project[] = result.data.map(adaptGitHubRepo);
+      
+      // Store all projects for client-side filtering
+      setAllProjects(prevProjects => {
+        // If we're on page 1, replace all projects
+        if (page === 1) {
+          return projects;
+        }
+        // Otherwise, append new projects to existing ones
+        return [...prevProjects, ...projects];
+      });
+      
       return { projects, totalCount: result.totalCount };
     },
     enabled: true, // Enable the query by default
@@ -63,12 +74,13 @@ const Index = () => {
     setSortBy('stars');
     setShowGoodFirstIssues(false);
     setPage(1);
+    setAllProjects([]);
   };
 
-  // Handle filtering by tags separately (client-side filtering)
+  // Apply tag filtering on the client side to all fetched projects
   const tagFilteredProjects = selectedTags.length > 0
-    ? filteredProjects.filter(project => 
-        selectedTags.some(tag => project.tags.includes(tag))
+    ? allProjects.filter(project => 
+        selectedTags.every(tag => project.tags.includes(tag))
       )
     : filteredProjects;
 
@@ -118,7 +130,7 @@ const Index = () => {
           </div>
           
           <div className="lg:col-span-3">
-            {isLoading ? (
+            {isLoading && page === 1 ? (
               <div className="flex justify-center items-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 <span className="ml-2">Loading repositories...</span>

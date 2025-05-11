@@ -9,17 +9,74 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { projects } from '@/data/projects';
+import { getRepositoryDetails, getGoodFirstIssues } from '@/services/githubService';
+import { adaptGitHubRepo } from '@/utils/githubAdapter';
+import { useQuery } from '@tanstack/react-query';
+import { Loader2 } from 'lucide-react';
+import { Project } from '@/data/projects';
 
 const ProjectDetails = () => {
   const { id } = useParams<{ id: string }>();
-  const project = projects.find(p => p.id === id);
+  
+  const { data: project, isLoading, isError } = useQuery({
+    queryKey: ['project', id],
+    queryFn: async () => {
+      // Extract owner and repo name from the URL if the id contains a URL
+      let owner, repo;
+      
+      if (id && id.includes('/')) {
+        [owner, repo] = id.split('/');
+      } else {
+        // If we only have the id, we need to look up the repository details
+        const repoDetails = await getRepositoryDetails('', '', Number(id));
+        if (repoDetails) {
+          const adaptedRepo = adaptGitHubRepo(repoDetails);
+          const url = adaptedRepo.repositoryUrl;
+          const urlParts = url.replace('https://github.com/', '').split('/');
+          owner = urlParts[0];
+          repo = urlParts[1];
+        }
+      }
+      
+      if (!owner || !repo) {
+        throw new Error('Invalid repository details');
+      }
+      
+      // Get repository details
+      const repoDetails = await getRepositoryDetails(owner, repo);
+      if (!repoDetails) {
+        throw new Error('Repository not found');
+      }
+      
+      // Adapt to our Project format
+      const project = adaptGitHubRepo(repoDetails);
+      
+      // Get additional data like good first issues count
+      const goodFirstIssuesCount = await getGoodFirstIssues(owner, repo);
+      project.goodFirstIssues = goodFirstIssuesCount;
+      
+      return project;
+    },
+    enabled: !!id,
+  });
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  if (!project) {
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <div className="container py-12 flex flex-col items-center justify-center flex-1">
+          <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+          <p>Loading project details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError || !project) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />

@@ -1,4 +1,3 @@
-
 import { toast } from "@/components/ui/use-toast";
 
 // Store the GitHub token
@@ -85,9 +84,21 @@ export const searchRepositories = async (
   }
 };
 
-export const getRepositoryDetails = async (owner: string, repo: string): Promise<GitHubRepository | null> => {
+export const getRepositoryDetails = async (owner: string, repo: string, id?: number): Promise<GitHubRepository | null> => {
   try {
-    const response = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
+    let url = '';
+    
+    if (id) {
+      // If we have an ID, get the repository directly
+      url = `https://api.github.com/repositories/${id}`;
+    } else if (owner && repo) {
+      // Otherwise, use the owner/repo path
+      url = `https://api.github.com/repos/${owner}/${repo}`;
+    } else {
+      throw new Error('Either id or owner/repo must be provided');
+    }
+
+    const response = await fetch(url, {
       headers: {
         'Accept': 'application/vnd.github.v3+json',
         'Authorization': `token ${GITHUB_TOKEN}`
