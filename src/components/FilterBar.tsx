@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Select, 
   SelectContent, 
@@ -9,8 +9,7 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, Filter } from 'lucide-react';
-import { languages, tags } from '@/data/projects';
+import { Search, Filter, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface FilterBarProps {
@@ -24,6 +23,8 @@ interface FilterBarProps {
   setSortBy: (value: string) => void;
   showGoodFirstIssues: boolean;
   setShowGoodFirstIssues: (value: boolean) => void;
+  languages?: string[];
+  topics?: string[];
 }
 
 const FilterBar: React.FC<FilterBarProps> = ({
@@ -37,7 +38,10 @@ const FilterBar: React.FC<FilterBarProps> = ({
   setSortBy,
   showGoodFirstIssues,
   setShowGoodFirstIssues,
+  languages = [],
+  topics = [],
 }) => {
+  const [searchInputValue, setSearchInputValue] = useState(searchTerm);
 
   const handleTagToggle = (tag: string) => {
     if (selectedTags.includes(tag)) {
@@ -47,18 +51,30 @@ const FilterBar: React.FC<FilterBarProps> = ({
     }
   };
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSearchTerm(searchInputValue);
+  };
+
   return (
     <div className="bg-card rounded-lg p-4 shadow-sm border">
       <div className="flex flex-col gap-4">
-        <div className="relative">
+        <form onSubmit={handleSearch} className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
           <Input
-            placeholder="Search projects..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search repositories..."
+            value={searchInputValue}
+            onChange={(e) => setSearchInputValue(e.target.value)}
             className="pl-10"
           />
-        </div>
+          <Button 
+            type="submit" 
+            size="sm" 
+            className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7"
+          >
+            Search
+          </Button>
+        </form>
         
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
@@ -94,18 +110,18 @@ const FilterBar: React.FC<FilterBarProps> = ({
 
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label className="text-sm font-medium">Tags</label>
+            <label className="text-sm font-medium">Topics</label>
             {selectedTags.length > 0 && (
               <button
                 onClick={() => setSelectedTags([])}
-                className="text-xs text-primary hover:underline"
+                className="text-xs text-primary hover:underline flex items-center gap-1"
               >
-                Clear all
+                <X size={12} /> Clear all
               </button>
             )}
           </div>
           <div className="flex flex-wrap gap-2">
-            {tags.map(tag => (
+            {topics.map(tag => (
               <Badge
                 key={tag}
                 variant={selectedTags.includes(tag) ? "default" : "outline"}
