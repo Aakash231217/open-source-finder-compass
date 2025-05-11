@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import Header from '@/components/Header';
 import ProjectCard from '@/components/ProjectCard';
 import FilterBar from '@/components/FilterBar';
 import EmptyState from '@/components/EmptyState';
@@ -56,7 +55,9 @@ const Index = () => {
           return projects;
         }
         // Otherwise, append new projects to existing ones
-        return [...prevProjects, ...projects];
+        const newProjects = [...prevProjects, ...projects];
+        // Remove duplicates based on id
+        return Array.from(new Map(newProjects.map(p => [p.id, p])).values());
       });
       
       return { projects, totalCount: result.totalCount };
@@ -77,10 +78,10 @@ const Index = () => {
     setAllProjects([]);
   };
 
-  // Apply tag filtering on the client side to all fetched projects
+  // Apply tag filtering on the client side
   const tagFilteredProjects = selectedTags.length > 0
     ? allProjects.filter(project => 
-        selectedTags.every(tag => project.tags.includes(tag))
+        selectedTags.some(tag => project.tags.includes(tag))
       )
     : filteredProjects;
 
@@ -90,43 +91,45 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
-      
-      <main className="flex-1 container py-8">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">Find Open Source Projects to Contribute</h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+      <main className="flex-1 container py-12">
+        <div className="text-center mb-16 space-y-4">
+          <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+            Find Open Source Projects to Contribute
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             Discover open source projects that match your interests and skill level,
             and start making meaningful contributions today.
           </p>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="lg:col-span-1">
-            <FilterBar 
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              selectedLanguage={selectedLanguage}
-              setSelectedLanguage={setSelectedLanguage}
-              selectedTags={selectedTags}
-              setSelectedTags={setSelectedTags}
-              sortBy={sortBy}
-              setSortBy={setSortBy}
-              showGoodFirstIssues={showGoodFirstIssues}
-              setShowGoodFirstIssues={setShowGoodFirstIssues}
-              languages={languages}
-              topics={topics}
-            />
-            <Button 
-              variant="outline" 
-              className="w-full mt-4"
-              onClick={() => {
-                resetFilters();
-                refetch();
-              }}
-            >
-              Reset Filters
-            </Button>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <div className="lg:col-span-1 space-y-4">
+            <div className="sticky top-4">
+              <FilterBar 
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                selectedLanguage={selectedLanguage}
+                setSelectedLanguage={setSelectedLanguage}
+                selectedTags={selectedTags}
+                setSelectedTags={setSelectedTags}
+                sortBy={sortBy}
+                setSortBy={setSortBy}
+                showGoodFirstIssues={showGoodFirstIssues}
+                setShowGoodFirstIssues={setShowGoodFirstIssues}
+                languages={languages}
+                topics={topics}
+              />
+              <Button 
+                variant="outline" 
+                className="w-full mt-4 hover:bg-secondary/80 transition-colors"
+                onClick={() => {
+                  resetFilters();
+                  refetch();
+                }}
+              >
+                Reset Filters
+              </Button>
+            </div>
           </div>
           
           <div className="lg:col-span-3">
@@ -144,7 +147,7 @@ const Index = () => {
               <>
                 <div className="flex justify-between items-center mb-6">
                   <p className="text-muted-foreground">
-                    Showing <span className="font-medium text-foreground">{tagFilteredProjects.length}</span> of{" "}
+                    Showing <span className="font-medium text-foreground">{allProjects.length}</span> of{" "}
                     <span className="font-medium text-foreground">{totalCount.toLocaleString()}</span> projects
                   </p>
                 </div>
@@ -177,7 +180,7 @@ const Index = () => {
         </div>
       </main>
       
-      <footer className="border-t py-6 mt-12">
+      <footer className="border-t border-border/50 py-8 mt-16 bg-muted/5">
         <div className="container">
           <p className="text-center text-sm text-muted-foreground">
             © {new Date().getFullYear()} OpenSourceFinder. Find the perfect open source project to contribute to.

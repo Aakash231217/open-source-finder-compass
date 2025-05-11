@@ -135,15 +135,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
         </div>
 
         <div className="flex items-center mt-2">
-          <Button 
-            variant={showGoodFirstIssues ? "default" : "outline"}
-            size="sm"
-            onClick={() => setShowGoodFirstIssues(!showGoodFirstIssues)}
-            className="text-xs h-8 gap-2"
-          >
-            <Filter size={14} />
-            Good First Issues
-          </Button>
+          
         </div>
       </div>
     </div>
